@@ -169,12 +169,12 @@ export function MusicSplitCalculator() {
 
           <label className="block space-y-2">
             <span className="label">Total revenue or payment amount</span>
-            <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-accent-400">
+            <div className="flex w-full overflow-hidden rounded-md border border-white/10 bg-ink-950/70 text-sm text-white transition focus-within:border-accent-400 focus-within:ring-2 focus-within:ring-accent-400/20">
+              <span className="inline-flex shrink-0 items-center border-r border-white/10 bg-white/[0.04] px-4 font-semibold text-accent-400">
                 $
               </span>
               <input
-                className="field pl-11 pr-4 tabular-nums"
+                className="min-w-0 flex-1 bg-transparent px-3 py-2 text-white outline-none tabular-nums placeholder:text-slate-500"
                 type="text"
                 inputMode="decimal"
                 value={totalRevenueInput}
@@ -340,9 +340,9 @@ export function MusicSplitCalculator() {
 
                   <label className="block space-y-2">
                     <span className="label">Percentage</span>
-                    <div className="relative">
+                    <div className="flex w-full overflow-hidden rounded-md border border-white/10 bg-ink-950/70 text-sm text-white transition focus-within:border-accent-400 focus-within:ring-2 focus-within:ring-accent-400/20">
                       <input
-                        className="field pr-12 tabular-nums"
+                        className="min-w-0 flex-1 bg-transparent px-3 py-2 text-white outline-none tabular-nums placeholder:text-slate-500"
                         type="text"
                         inputMode="decimal"
                         value={contributor.percentage}
@@ -353,7 +353,7 @@ export function MusicSplitCalculator() {
                         }
                         placeholder="0"
                       />
-                      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm font-semibold text-accent-400">
+                      <span className="inline-flex shrink-0 items-center border-l border-white/10 bg-white/[0.04] px-3 font-semibold text-accent-400">
                         %
                       </span>
                     </div>
