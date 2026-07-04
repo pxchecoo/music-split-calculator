@@ -12,20 +12,34 @@ import {
   Trash2
 } from "lucide-react";
 
+type RoleOption = "Artist" | "Producer" | "Composer" | "Custom";
+
 type Contributor = {
   id: string;
   name: string;
   role: string;
+  roleOption: RoleOption;
   percentage: number;
 };
 
-const defaultRoles = ["Producer", "Artist", "Composer", "Engineer", "Manager"];
+const roleOptions: RoleOption[] = ["Artist", "Producer", "Composer", "Custom"];
+
+function getRoleOption(role?: string): RoleOption {
+  if (role === "Artist" || role === "Producer" || role === "Composer") {
+    return role;
+  }
+
+  return role === "Custom" || role ? "Custom" : "Producer";
+}
 
 function createContributor(partial?: Partial<Contributor>): Contributor {
+  const role = partial?.role || "Producer";
+
   return {
     id: partial?.id || crypto.randomUUID(),
     name: "",
-    role: "Producer",
+    role,
+    roleOption: partial?.roleOption || getRoleOption(role),
     percentage: 0,
     ...partial
   };
@@ -50,8 +64,8 @@ export function MusicSplitCalculator() {
   const [songTitle, setSongTitle] = useState("");
   const [totalRevenue, setTotalRevenue] = useState(1000);
   const [contributors, setContributors] = useState<Contributor[]>([
-    { id: "producer", name: "Producer", role: "Producer", percentage: 50 },
-    { id: "artist", name: "Artist", role: "Artist", percentage: 50 }
+    { id: "producer", name: "Producer", role: "Producer", roleOption: "Producer", percentage: 50 },
+    { id: "artist", name: "Artist", role: "Artist", roleOption: "Artist", percentage: 50 }
   ]);
 
   const totalPercentage = useMemo(
@@ -73,6 +87,13 @@ export function MusicSplitCalculator() {
         contributor.id === id ? { ...contributor, ...patch } : contributor
       )
     );
+  }
+
+  function updateContributorRole(id: string, roleOption: RoleOption) {
+    updateContributor(id, {
+      roleOption,
+      role: roleOption === "Custom" ? "" : roleOption
+    });
   }
 
   function removeContributor(id: string) {
@@ -121,14 +142,20 @@ export function MusicSplitCalculator() {
 
           <label className="block space-y-2">
             <span className="label">Total revenue or payment amount</span>
-            <input
-              className="field"
-              type="number"
-              min="0"
-              step="0.01"
-              value={totalRevenue}
-              onChange={(event) => setTotalRevenue(clampNumber(event.target.value, 0))}
-            />
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm font-semibold text-accent-400">
+                $
+              </span>
+              <input
+                className="field pl-8"
+                type="number"
+                min="0"
+                step="0.01"
+                value={totalRevenue}
+                onChange={(event) => setTotalRevenue(clampNumber(event.target.value, 0))}
+                placeholder="0.00"
+              />
+            </div>
           </label>
 
           <div className="rounded-lg border border-white/10 bg-ink-950/60 p-4">
@@ -229,7 +256,7 @@ export function MusicSplitCalculator() {
                   </button>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_0.85fr_0.6fr]">
+                <div className="grid gap-3 sm:grid-cols-[1fr_0.95fr_0.6fr]">
                   <label className="block space-y-2">
                     <span className="label">Name</span>
                     <input
@@ -243,35 +270,69 @@ export function MusicSplitCalculator() {
                     />
                   </label>
 
-                  <label className="block space-y-2">
-                    <span className="label">Role</span>
-                    <input
-                      className="field"
-                      value={contributor.role}
-                      list="roles"
-                      onChange={(event) =>
-                        updateContributor(contributor.id, { role: event.target.value })
-                      }
-                      maxLength={60}
-                      placeholder="Producer"
-                    />
-                  </label>
+                  <div className="space-y-2">
+                    <label className="block space-y-2">
+                      <span className="label">Role</span>
+                      <div className="relative">
+                        <select
+                          className="field appearance-none pr-10"
+                          value={contributor.roleOption}
+                          onChange={(event) =>
+                            updateContributorRole(
+                              contributor.id,
+                              event.target.value as RoleOption
+                            )
+                          }
+                        >
+                          {roleOptions.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-300">
+                          ▼
+                        </span>
+                      </div>
+                    </label>
+
+                    {contributor.roleOption === "Custom" ? (
+                      <label className="block space-y-2">
+                        <span className="label">Custom role</span>
+                        <input
+                          className="field"
+                          value={contributor.role}
+                          onChange={(event) =>
+                            updateContributor(contributor.id, { role: event.target.value })
+                          }
+                          maxLength={60}
+                          placeholder="Write custom role"
+                        />
+                      </label>
+                    ) : null}
+                  </div>
 
                   <label className="block space-y-2">
                     <span className="label">Percentage</span>
-                    <input
-                      className="field"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={contributor.percentage}
-                      onChange={(event) =>
-                        updateContributor(contributor.id, {
-                          percentage: clampNumber(event.target.value, 0, 100)
-                        })
-                      }
-                    />
+                    <div className="relative">
+                      <input
+                        className="field pr-9"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={contributor.percentage}
+                        onChange={(event) =>
+                          updateContributor(contributor.id, {
+                            percentage: clampNumber(event.target.value, 0, 100)
+                          })
+                        }
+                        placeholder="0"
+                      />
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-accent-400">
+                        %
+                      </span>
+                    </div>
                   </label>
                 </div>
 
@@ -287,12 +348,6 @@ export function MusicSplitCalculator() {
             );
           })}
         </div>
-
-        <datalist id="roles">
-          {defaultRoles.map((role) => (
-            <option key={role} value={role} />
-          ))}
-        </datalist>
 
         <div className="mt-6 overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full min-w-[620px] text-left text-sm">
