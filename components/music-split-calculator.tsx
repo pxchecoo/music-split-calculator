@@ -6,7 +6,6 @@ import {
   CircleCheck,
   CirclePlus,
   CircleX,
-  Printer,
   RotateCcw,
   TriangleAlert,
   Trash2
@@ -237,10 +236,6 @@ export function MusicSplitCalculator() {
             <button className="btn-secondary" type="button" onClick={clearCalculator}>
               <RotateCcw aria-hidden className="h-4 w-4" />
               Clear Calculator
-            </button>
-            <button className="btn-secondary" type="button" onClick={() => window.print()}>
-              <Printer aria-hidden className="h-4 w-4" />
-              Print Summary
             </button>
           </div>
         </div>
