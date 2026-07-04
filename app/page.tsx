@@ -34,9 +34,8 @@ export default function HomePage() {
       </section>
 
       <section id="calculator" className="px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-8 max-w-6xl">
-          <p className="text-sm font-semibold text-accent-400">No accounts. No saved data.</p>
-          <h2 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">
+        <div className="no-print mx-auto mb-8 max-w-6xl">
+          <h2 className="text-3xl font-semibold text-white sm:text-4xl">
             Calculate the split while the session is fresh.
           </h2>
         </div>
