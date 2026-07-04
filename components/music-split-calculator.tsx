@@ -53,6 +53,28 @@ function formatCurrency(value: number) {
   }).format(Number.isFinite(value) ? value : 0);
 }
 
+function parseMoneyInput(value: string) {
+  const parsed = Number(value.replace(/,/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatMoneyInput(value: string) {
+  const cleaned = value.replace(/,/g, "").replace(/[^\d.]/g, "");
+
+  if (!cleaned) {
+    return "";
+  }
+
+  const hasDecimal = cleaned.includes(".");
+  const [wholePart, ...decimalParts] = cleaned.split(".");
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  const formattedWhole = wholePart
+    ? new Intl.NumberFormat("en-US").format(Number(wholePart))
+    : "0";
+
+  return hasDecimal ? `${formattedWhole}.${decimalPart}` : formattedWhole;
+}
+
 function clampNumber(value: string, min: number, max?: number) {
   const parsed = Number(value);
   const safeValue = Number.isFinite(parsed) ? parsed : min;
@@ -62,11 +84,16 @@ function clampNumber(value: string, min: number, max?: number) {
 
 export function MusicSplitCalculator() {
   const [songTitle, setSongTitle] = useState("");
-  const [totalRevenue, setTotalRevenue] = useState(1000);
+  const [totalRevenueInput, setTotalRevenueInput] = useState("1,000");
   const [contributors, setContributors] = useState<Contributor[]>([
     { id: "producer", name: "Producer", role: "Producer", roleOption: "Producer", percentage: 50 },
     { id: "artist", name: "Artist", role: "Artist", roleOption: "Artist", percentage: 50 }
   ]);
+
+  const totalRevenue = useMemo(
+    () => parseMoneyInput(totalRevenueInput),
+    [totalRevenueInput]
+  );
 
   const totalPercentage = useMemo(
     () =>
@@ -106,7 +133,7 @@ export function MusicSplitCalculator() {
 
   function clearCalculator() {
     setSongTitle("");
-    setTotalRevenue(0);
+    setTotalRevenueInput("0");
     setContributors([createContributor()]);
   }
 
@@ -143,16 +170,15 @@ export function MusicSplitCalculator() {
           <label className="block space-y-2">
             <span className="label">Total revenue or payment amount</span>
             <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm font-semibold text-accent-400">
+              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-accent-400">
                 $
               </span>
               <input
-                className="field pl-8"
-                type="number"
-                min="0"
-                step="0.01"
-                value={totalRevenue}
-                onChange={(event) => setTotalRevenue(clampNumber(event.target.value, 0))}
+                className="field pl-11 pr-4 tabular-nums"
+                type="text"
+                inputMode="decimal"
+                value={totalRevenueInput}
+                onChange={(event) => setTotalRevenueInput(formatMoneyInput(event.target.value))}
                 placeholder="0.00"
               />
             </div>
@@ -227,14 +253,14 @@ export function MusicSplitCalculator() {
           </p>
           <h3 className="text-2xl font-semibold text-white">Contributor payouts</h3>
           <p className="mt-1 text-sm text-slate-400">
-            Based on {formatCurrency(Number(totalRevenue || 0))} total revenue.
+            Based on {formatCurrency(totalRevenue)} total revenue.
           </p>
         </div>
 
         <div className="space-y-4">
           {contributors.map((contributor, index) => {
             const payout =
-              (Number(totalRevenue || 0) * Number(contributor.percentage || 0)) / 100;
+              (totalRevenue * Number(contributor.percentage || 0)) / 100;
 
             return (
               <div
@@ -316,11 +342,9 @@ export function MusicSplitCalculator() {
                     <span className="label">Percentage</span>
                     <div className="relative">
                       <input
-                        className="field pr-9"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
+                        className="field pr-12 tabular-nums"
+                        type="text"
+                        inputMode="decimal"
                         value={contributor.percentage}
                         onChange={(event) =>
                           updateContributor(contributor.id, {
@@ -329,7 +353,7 @@ export function MusicSplitCalculator() {
                         }
                         placeholder="0"
                       />
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-accent-400">
+                      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm font-semibold text-accent-400">
                         %
                       </span>
                     </div>
@@ -373,9 +397,7 @@ export function MusicSplitCalculator() {
                   </td>
                   <td className="px-4 py-3 font-semibold text-white">
                     {formatCurrency(
-                      (Number(totalRevenue || 0) *
-                        Number(contributor.percentage || 0)) /
-                        100
+                      (totalRevenue * Number(contributor.percentage || 0)) / 100
                     )}
                   </td>
                 </tr>
